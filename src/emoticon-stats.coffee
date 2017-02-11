@@ -14,7 +14,7 @@
 # Author:
 #   Ravikiran Janardhana <ravikiran.j.127@gmail.com>
 
-emoticonRegex = /(^|\s)\([a-z0-9]+\)(\s|$)/gi
+emoticonRegex = /(^|\s)\([a-z0-9]+\)(\s|$)/g
 topRegex = /^\/emote top$/i
 bottomRegex = /^\/emote bottom$/i
 emoteCountRegex = /^\/emote\s+(\([a-z0-9]+\))\s*$/i
