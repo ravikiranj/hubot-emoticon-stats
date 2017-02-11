@@ -4,9 +4,12 @@
 # Configuration:
 #
 # Commands:
-#   (emoticon) - listens to emoticons to record stats
+#   /emote top - lists top 10 emoticons used
+#   /emote bottom - lists bottom 10 emoticons sorted by count
+#   /emote (emoticon) - lists count of a particular emoticon
 #
 # Notes:
+#   Please install a redis server before installing/testing this plugin
 #
 # Author:
 #   Ravikiran Janardhana <ravikiran.j.127@gmail.com>
@@ -21,9 +24,11 @@ class EmoticonCounts
         @cache =
             emoticonCounts: {}
 
-        @robot.brain.on 'loaded', ->
+        @robot.brain.on 'loaded', =>
             @robot.brain.data.emoticonCounts = @robot.brain.data.emoticonCounts || {}
             @cache.emoticonCounts = @robot.brain.data.emoticonCounts
+            delete @robot.brain.data.emoticonCounts[undefined]
+
 
     initCounts: (counts) ->
         @cache.emoticonCounts = counts
@@ -34,7 +39,7 @@ class EmoticonCounts
 
     saveEmoticonCount: (emoticon) ->
         @robot.brain.data.emoticonCounts[emoticon] = @cache.emoticonCounts[emoticon]
-        @robot.brain.emit("save", @robot.brain.data)
+        @robot.brain.emit('save', @robot.brain.data)
         
     updateEmoticonCount: (emoticon) ->
         @cache.emoticonCounts[emoticon] = @getEmoticonCount(emoticon) + 1
@@ -50,11 +55,8 @@ class EmoticonCounts
         return tops.sort((a,b) -> b.score - a.score).slice(0, n)
 
     bottom: (n) ->
-        bottoms = []
-        for emoticon, count of @cache.emoticonCounts
-            bottoms.push(emoticon: emoticon, count: count)
-
-        return bottoms.sort((a,b) -> a.score - b.score).slice(0, n)
+        all = @top(@cache.emoticonCounts.length)
+        return all.reverse().slice(0, n)
 
 module.exports = (robot) ->
     emoticonCounts = new EmoticonCounts(robot)
@@ -65,8 +67,8 @@ module.exports = (robot) ->
         if user.mention_name == 'hbot'
             return
 
-        # Ignore messages starting with "/emote"
-        if msg.message.text.startsWith("/emote")
+        # Ignore messages starting with '/emote'
+        if msg.message.text.startsWith('/emote')
             return
 
         xmpp_jid = msg.message.user.reply_to
@@ -79,14 +81,13 @@ module.exports = (robot) ->
             if result? and result[0]?
                 emoticon = result[0].trim()
                 value = emoticonCounts.updateEmoticonCount(emoticon)
-                @robot.logger.info "Updated #{emoticon} count to #{value}"
 
     robot.hear topRegex, (msg) ->
         op = []
         n = 10
-        tops = emoticonCounts.top(n)
-        for i in [0..tops.length - 1]
-            op.push("#{i+1}: #{tops[i].emoticon} : #{tops[i].count}")
+        top = emoticonCounts.top(n)
+        for i in [0..top.length - 1]
+            op.push("#{top[i].count} #{top[i].emoticon}")
 
         msg.send op.join("\n")
 
@@ -95,11 +96,11 @@ module.exports = (robot) ->
         n = 10
         bottom = emoticonCounts.bottom(n)
         for i in [0..bottom.length - 1]
-            op.push("#{i+1}: #{bottom[i].emoticon} : #{bottom[i].count}")
+            op.push("#{bottom[i].count} #{bottom[i].emoticon}")
 
         msg.send op.join("\n")
 
     robot.hear emoteCountRegex, (msg) ->
         emoticon = msg.match[1]
-        count = emoticonCounts.getEmoticonCount()
+        count = emoticonCounts.getEmoticonCount(emoticon)
         msg.send "#{emoticon} = #{count}"
