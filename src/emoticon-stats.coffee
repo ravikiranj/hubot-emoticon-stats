@@ -18,6 +18,7 @@ emoticonRegex = /(^|\s)\([a-z0-9]+\)(\s|$)/g
 topRegex = /^\/emote top$/i
 bottomRegex = /^\/emote bottom$/i
 emoteCountRegex = /^\/emote\s+(\([a-z0-9]+\))\s*$/i
+allRegex = /^\/emote all$/i
 
 class EmoticonCounts
     constructor: (@robot) ->
@@ -55,6 +56,9 @@ class EmoticonCounts
     bottom: (n) ->
         all = @top(@cache.emoticonCounts.length)
         return all.reverse().slice(0, n)
+
+    all: () ->
+        return @top(@cache.emoticonCounts.length)
 
 module.exports = (robot) ->
     emoticonCounts = new EmoticonCounts(robot)
@@ -102,3 +106,16 @@ module.exports = (robot) ->
         emoticon = msg.match[1]
         count = emoticonCounts.getEmoticonCount(emoticon)
         msg.send "#{emoticon} = #{count}"
+
+    robot.hear allRegex, (msg) ->
+        # Only respond if in Shire
+        room_xmpp_jid = msg.message.user.reply_to
+        if room_xmpp_jid != "1_shire@conf.btf.hipchat.com"
+            return
+
+        op = []
+        all = emoticonCounts.all()
+        for i in [0..all.length - 1]
+            op.push("#{all[i].count} #{all[i].emoticon}")
+
+        msg.send op.join("\n")
