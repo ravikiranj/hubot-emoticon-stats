@@ -27,8 +27,6 @@ class EmoticonCounts
         @robot.brain.on 'loaded', =>
             @robot.brain.data.emoticonCounts = @robot.brain.data.emoticonCounts || {}
             @cache.emoticonCounts = @robot.brain.data.emoticonCounts
-            delete @robot.brain.data.emoticonCounts[undefined]
-
 
     initCounts: (counts) ->
         @cache.emoticonCounts = counts
