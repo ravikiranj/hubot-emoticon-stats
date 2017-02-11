@@ -52,7 +52,7 @@ class EmoticonCounts
         for emoticon, count of @cache.emoticonCounts
             tops.push(emoticon: emoticon, count: count)
 
-        return tops.sort((a,b) -> b.score - a.score).slice(0, n)
+        return tops.sort((a,b) -> b.count - a.count).slice(0, n)
 
     bottom: (n) ->
         all = @top(@cache.emoticonCounts.length)
