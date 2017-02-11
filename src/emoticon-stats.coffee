@@ -4,9 +4,9 @@
 # Configuration:
 #
 # Commands:
-#   /emote top - lists top 10 emoticons used
-#   /emote bottom - lists bottom 10 emoticons sorted by count
-#   /emote (emoticon) - lists count of a particular emoticon
+#   /emoticon top - lists top 10 emoticons used
+#   /emoticon bottom - lists bottom 10 emoticons sorted by count
+#   /emoticon (emoticon) - lists count of a particular emoticon
 #
 # Notes:
 #   Please install a redis server before installing/testing this plugin
@@ -15,10 +15,10 @@
 #   Ravikiran Janardhana <ravikiran.j.127@gmail.com>
 
 emoticonRegex = /\([a-z0-9]+\)/g
-topRegex = /^\/emote top$/i
-bottomRegex = /^\/emote bottom$/i
-emoteCountRegex = /^\/emote\s+(\([a-z0-9]+\))\s*$/i
-allRegex = /^\/emote all$/i
+topRegex = /^\/emoticon top$/i
+bottomRegex = /^\/emoticon bottom$/i
+emoticonCountRegex = /^\/emoticon\s+(\([a-z0-9]+\))\s*$/i
+allRegex = /^\/emoticon all$/i
 
 class EmoticonCounts
     constructor: (@robot) ->
@@ -60,7 +60,7 @@ class EmoticonCounts
         all = @top(@cache.emoticonCounts.length)
         return all.reverse().slice(0, n)
 
-    all: () ->
+    all: ->
         return @top(@cache.emoticonCounts.length)
 
 module.exports = (robot) ->
@@ -72,8 +72,8 @@ module.exports = (robot) ->
         if user.mention_name == 'hbot'
             return
 
-        # Ignore messages starting with '/emote'
-        if msg.message.text.startsWith('/emote')
+        # Ignore messages starting with '/emoticon'
+        if msg.message.text.startsWith('/emoticon')
             return
 
         for input in msg.match
@@ -103,7 +103,7 @@ module.exports = (robot) ->
 
         msg.send op.join("\n")
 
-    robot.hear emoteCountRegex, (msg) ->
+    robot.hear emoticonCountRegex, (msg) ->
         emoticon = msg.match[1]
         count = emoticonCounts.getEmoticonCountWithoutDefaultWrite(emoticon)
         msg.send "#{emoticon} = #{count}"
