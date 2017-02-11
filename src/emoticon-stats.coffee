@@ -36,6 +36,9 @@ class EmoticonCounts
         @cache.emoticonCounts[emoticon] = @cache.emoticonCounts[emoticon] || 0
         return @cache.emoticonCounts[emoticon]
 
+    getEmoticonCountWithoutDefaultWrite: (emoticon) ->
+        return @cache.emoticonCounts[emoticon] || 0
+
     saveEmoticonCount: (emoticon) ->
         @robot.brain.data.emoticonCounts[emoticon] = @cache.emoticonCounts[emoticon]
         @robot.brain.emit('save', @robot.brain.data)
@@ -73,8 +76,6 @@ module.exports = (robot) ->
         if msg.message.text.startsWith('/emote')
             return
 
-        xmpp_jid = msg.message.user.reply_to
-
         for input in msg.match
             result = emoticonRegex.exec(input)
             # See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec#Description
@@ -104,7 +105,7 @@ module.exports = (robot) ->
 
     robot.hear emoteCountRegex, (msg) ->
         emoticon = msg.match[1]
-        count = emoticonCounts.getEmoticonCount(emoticon)
+        count = emoticonCounts.getEmoticonCountWithoutDefaultWrite(emoticon)
         msg.send "#{emoticon} = #{count}"
 
     robot.hear allRegex, (msg) ->
